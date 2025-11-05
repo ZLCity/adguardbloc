@@ -1,5 +1,5 @@
-import Deck from './Deck.js';
-import Player from './Player.js';
+const Deck = require('./Deck.js');
+const Player = require('./Player.js');
 
 class Game {
   constructor(playerIds, cardData) {
@@ -12,8 +12,9 @@ class Game {
     };
     this.currentPlayerIndex = 0;
     this.gameState = {
-      phase: 'SETUP', // SETUP, DRAW_DOOR, COMBAT, LOOT, CHARITY, END_TURN
+      phase: 'SETUP', // SETUP, KICK_OPEN_DOOR, COMBAT, LOOT, CHARITY, END_TURN
     };
+    this.combat = null; // { monster, monsterBonus, playerBonuses }
   }
 
   startGame() {
@@ -53,6 +54,75 @@ class Game {
     console.log(`Processing action: ${action} from ${player.name}`);
     // Action processing logic will go here
   }
+
+  // --- Combat Phase Logic ---
+
+  startCombat(monsterCard) {
+    if (this.gameState.phase === 'COMBAT') {
+      console.error("Cannot start a new combat while another is in progress.");
+      return;
+    }
+    this.gameState.phase = 'COMBAT';
+    this.combat = {
+      monster: monsterCard,
+      monsterBonus: 0,
+      playerBonuses: 0, // From one-shot items, etc.
+      helpers: [], // IDs of players helping
+    };
+    console.log(`${this.getCurrentPlayer().name} is now fighting a ${monsterCard.title}!`);
+  }
+
+  resolveCombat() {
+    if (this.gameState.phase !== 'COMBAT') return;
+
+    const player = this.getCurrentPlayer();
+    const playerStrength = player.getCombatStrength() + this.combat.playerBonuses;
+    const monsterStrength = this.combat.monster.level + this.combat.monsterBonus;
+
+    console.log(`Resolving combat: Player strength (${playerStrength}) vs. Monster strength (${monsterStrength})`);
+
+    if (playerStrength > monsterStrength) {
+      // Player wins
+      console.log("Player wins the combat!");
+      player.level += 1; // Basic level up
+      this.drawTreasures(this.combat.monster.treasures || 1);
+      this.endCombat();
+    } else {
+      // Player loses, must run away
+      this.attemptToRunAway();
+    }
+  }
+
+  attemptToRunAway() {
+    const player = this.getCurrentPlayer();
+    const diceRoll = Math.floor(Math.random() * 6) + 1;
+    console.log(`${player.name} attempts to run away... rolls a ${diceRoll}`);
+
+    if (diceRoll >= 5) { // Munchkin rule: 5 or 6 to escape
+      console.log("...and succeeds!");
+      this.endCombat();
+    } else {
+      console.log("...and fails! Bad stuff happens.");
+      // In a full implementation, you'd apply the monster's "Bad Stuff" effect here.
+      this.endCombat();
+    }
+  }
+
+  drawTreasures(count) {
+    const player = this.getCurrentPlayer();
+    console.log(`${player.name} draws ${count} treasure(s).`);
+    for (let i = 0; i < count; i++) {
+      if (this.treasureDeck.count > 0) {
+        player.drawCard(this.treasureDeck);
+      }
+    }
+  }
+
+  endCombat() {
+    this.combat = null;
+    this.gameState.phase = 'LOOT'; // Or CHARITY, depending on what's next
+    console.log("Combat has ended.");
+  }
 }
 
-export default Game;
+module.exports = Game;

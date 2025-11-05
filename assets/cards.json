@@ -1,56 +1,32 @@
 {
   "door": [
-    {
-      "id": "d001",
-      "title": "Курча-на-бігу",
-      "type": "DOOR",
-      "subtype": "MONSTER",
-      "description": "Рівень 1. Не буде переслідувати гравців 3-го рівня або нижче.",
-      "level": 1,
-      "treasures": 1
-    },
-    {
-      "id": "d002",
-      "title": "Плутонієвий Дракон",
-      "type": "DOOR",
-      "subtype": "MONSTER",
-      "description": "Рівень 20. +5 проти гномів. Потрібно кинути кубик, щоб втекти. Якщо програв - смерть.",
-      "level": 20,
-      "treasures": 5
-    },
-    {
-      "id": "d003",
-      "title": "Прокляття! Зміна статі",
-      "type": "DOOR",
-      "subtype": "CURSE",
-      "description": "Твоя стать змінюється. Всі бонуси, пов'язані зі старою статтю, втрачаються."
-    }
+    { "id": "d001", "title": "Курча-на-бігу", "type": "DOOR", "subtype": "MONSTER", "description": "Рівень 1. Не буде переслідувати гравців 3-го рівня або нижче.", "level": 1, "treasures": 1 },
+    { "id": "d002", "title": "Плутонієвий Дракон", "type": "DOOR", "subtype": "MONSTER", "description": "Рівень 20. +5 проти гномів. Якщо програв - смерть.", "level": 20, "treasures": 5 },
+    { "id": "d003", "title": "Сочаться Слиз", "type": "DOOR", "subtype": "MONSTER", "description": "Рівень 1. Бонус +4 проти ельфів.", "level": 1, "treasures": 1 },
+    { "id": "d004", "title": "Гикаючі Кальмари", "type": "DOOR", "subtype": "MONSTER", "description": "Рівень 2. Бонус +4 проти напівросликів.", "level": 2, "treasures": 1 },
+    { "id": "d005", "title": "Адвокат", "type": "DOOR", "subtype": "MONSTER", "description": "Рівень 6. Забирає твої шмотки. Якщо програв, скинь всю руку.", "level": 6, "treasures": 2 },
+    { "id": "d006", "title": "Прокляття! Зміна статі", "type": "DOOR", "subtype": "CURSE", "description": "Твоя стать змінюється." },
+    { "id": "d007", "title": "Прокляття! Втрать 1 шмотку", "type": "DOOR", "subtype": "CURSE", "description": "Скинь 1 шмотку на твій вибір." },
+    { "id": "d008", "title": "Прокляття! Втрать рівень", "type": "DOOR", "subtype": "CURSE", "description": "Ти втрачаєш один рівень." },
+    { "id": "d009", "title": "Клас: Воїн", "type": "DOOR", "subtype": "CLASS", "description": "Можеш виграти бій внічию. Можеш скинути до 3 карт в бою, +1 за кожну." },
+    { "id": "d010", "title": "Клас: Злодій", "type": "DOOR", "subtype": "CLASS", "description": "Можеш спробувати вкрасти шмотку в іншого гравця. Можеш вдарити в спину (+2 в бою)." },
+    { "id": "d011", "title": "Клас: Клірик", "type": "DOOR", "subtype": "CLASS", "description": "Можеш скинути карти, щоб отримати бонус проти нежиті. Можеш воскресити карти з відбою." },
+    { "id": "d012", "title": "Раса: Ельф", "type": "DOOR", "subtype": "RACE", "description": "+1 до втечі. Отримуєш рівень за допомогу в бою." },
+    { "id": "d013", "title": "Раса: Гном", "type": "DOOR", "subtype": "RACE", "description": "Можеш нести будь-яку кількість великих шмоток. Можеш взяти карту скарбів лицем догори." },
+    { "id": "d014", "title": "Раса: Напіврослик", "type": "DOOR", "subtype": "RACE", "description": "Можеш продавати шмотки за подвійною ціною. Раз на бій можеш змусити монстра промахнутися." }
   ],
   "treasure": [
-    {
-      "id": "t001",
-      "title": "Черевики Могутнього Пенделя",
-      "type": "TREASURE",
-      "subtype": "ITEM",
-      "description": "Бонус +2. Взуття.",
-      "bonus": 2,
-      "slot": "FEET"
-    },
-    {
-      "id": "t002",
-      "title": "Колінжабль",
-      "type": "TREASURE",
-      "subtype": "ITEM",
-      "description": "Бонус +1. Наколінники.",
-      "bonus": 1,
-      "slot": "LEGS"
-    },
-    {
-      "id": "t003",
-      "title": "Зіллля Попукенроллу",
-      "type": "TREASURE",
-      "subtype": "ONE_SHOT",
-      "description": "Використовуй у будь-якому бою. +2 до будь-якої зі сторін. Одноразове."
-    }
+    { "id": "t001", "title": "Черевики Могутнього Пенделя", "type": "TREASURE", "subtype": "ITEM", "description": "Бонус +2. Взуття.", "bonus": 2, "slot": "FEET" },
+    { "id": "t002", "title": "Колінжабль", "type": "TREASURE", "subtype": "ITEM", "description": "Бонус +1. Наколінники.", "bonus": 1, "slot": "LEGS" },
+    { "id": "t003", "title": "Палиця Напалму", "type": "TREASURE", "subtype": "ITEM", "description": "Бонус +5. Зброя. Велика.", "bonus": 5, "slot": "HAND1", "is_big": true },
+    { "id": "t004", "title": "Сирна Терка Спокою", "type": "TREASURE", "subtype": "ITEM", "description": "Бонус +3. Зброя.", "bonus": 3, "slot": "HAND1" },
+    { "id": "t005", "title": "Шолом-Рогач", "type": "TREASURE", "subtype": "ITEM", "description": "Бонус +1. Головняк.", "bonus": 1, "slot": "HEAD" },
+    { "id": "t006", "title": "Бронік з Фольги", "type": "TREASURE", "subtype": "ITEM", "description": "Бонус +1. Бронік.", "bonus": 1, "slot": "ARMOR" },
+    { "id": "t007", "title": "Зіллля Попукенроллу", "type": "TREASURE", "subtype": "ONE_SHOT", "description": "Використовуй у будь-якому бою. +2 до будь-якої зі сторін." },
+    { "id": "t008", "title": "Зілля дружби", "type": "TREASURE", "subtype": "ONE_SHOT", "description": "Змусь іншого гравця тобі допомогти без нагороди." },
+    { "id": "t009", "title": "Зілля трансмутації", "type": "TREASURE", "subtype": "ONE_SHOT", "description": "Перетвори одну шмотку на іншу (скинь, візьми нову)." },
+    { "id": "t010", "title": "Допоможи!", "type": "TREASURE", "subtype": "SPECIAL", "description": "Якщо ти в бою, можеш зіграти цю карту, щоб отримати допомогу." },
+    { "id": "t011", "title": "Підвищення рівня", "type": "TREASURE", "subtype": "LEVEL_UP", "description": "Отримай 1 рівень. Не можна зіграти для переможного рівня." },
+    { "id": "t012", "title": "Зміна раси", "type": "TREASURE", "subtype": "SPECIAL", "description": "Скинь свою расу і візьми нову з відбою або колоди." }
   ]
 }

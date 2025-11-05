@@ -12,15 +12,17 @@ class Player {
       hand1: null,
       hand2: null,
     };
+    this.combatBonus = 0; // For one-shot potions, etc.
   }
 
-  calculateStrength() {
+  getCombatStrength() {
     let strength = this.level;
     for (const slot in this.equipped) {
       if (this.equipped[slot]) {
         strength += this.equipped[slot].bonus || 0;
       }
     }
+    strength += this.combatBonus;
     return strength;
   }
 
@@ -47,4 +49,4 @@ class Player {
   }
 }
 
-export default Player;
+module.exports = Player;

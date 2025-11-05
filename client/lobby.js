@@ -1,9 +1,12 @@
 import { firebaseConfig } from './firebase-config.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 // --- Firebase Initialization ---
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 // --- DOM Elements ---
 const authSection = document.getElementById('auth-section');
@@ -14,18 +17,16 @@ const gamesList = document.getElementById('games-list');
 
 // --- Authentication ---
 loginBtn.addEventListener('click', () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(error => console.error("Login failed:", error));
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider).catch(error => console.error("Login failed:", error));
 });
 
-auth.onAuthStateChanged(user => {
+onAuthStateChanged(auth, user => {
     if (user) {
-        // User is signed in
         authSection.style.display = 'none';
         gamesListSection.style.display = 'block';
         subscribeToGamesList(user.uid);
     } else {
-        // User is signed out
         authSection.style.display = 'block';
         gamesListSection.style.display = 'none';
     }
@@ -40,15 +41,12 @@ createGameBtn.addEventListener('click', async () => {
     }
 
     try {
-        // Create a new game session document in Firestore
-        const newGameRef = await db.collection('game_sessions').add({
-            status: 'waiting', // waiting, in-progress, finished
+        const newGameRef = await addDoc(collection(db, 'game_sessions'), {
+            status: 'waiting',
             host: user.uid,
             players: [{ id: user.uid, name: user.displayName || 'Player 1' }],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            createdAt: serverTimestamp()
         });
-        console.log("New game created with ID:", newGameRef.id);
-        // Redirect to the game page (or handle joining logic)
         window.location.href = `index.html?gameId=${newGameRef.id}`;
     } catch (error) {
         console.error("Error creating game:", error);
@@ -57,17 +55,17 @@ createGameBtn.addEventListener('click', async () => {
 
 let gamesUnsubscribe = null;
 function subscribeToGamesList(userId) {
-    if (gamesUnsubscribe) gamesUnsubscribe(); // Unsubscribe from previous listener
+    if (gamesUnsubscribe) gamesUnsubscribe();
 
-    const query = db.collection('game_sessions').where('status', '==', 'waiting').orderBy('createdAt', 'desc');
+    const q = query(collection(db, 'game_sessions'), where('status', '==', 'waiting'), orderBy('createdAt', 'desc'));
 
-    gamesUnsubscribe = query.onSnapshot(snapshot => {
-        gamesList.innerHTML = ''; // Clear the list
-        if (snapshot.empty) {
+    gamesUnsubscribe = onSnapshot(q, (querySnapshot) => {
+        gamesList.innerHTML = '';
+        if (querySnapshot.empty) {
             gamesList.innerHTML = '<p>Немає доступних ігор. Створіть нову!</p>';
             return;
         }
-        snapshot.forEach(doc => {
+        querySnapshot.forEach((doc) => {
             const game = doc.data();
             const gameElement = document.createElement('div');
             gameElement.className = 'game-item';
