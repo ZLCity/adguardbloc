@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ігрове Лобі - Munchkin Clone</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { padding: 2em; text-align: center; }
+        #lobby-container { max-width: 600px; margin: auto; }
+        .game-item { display: flex; justify-content: space-between; padding: 1em; border-bottom: 1px solid #ccc; }
+        #create-game-btn { margin-top: 1em; padding: 0.8em 1.5em; font-size: 1em; }
+    </style>
+</head>
+<body>
+    <div id="lobby-container">
+        <h1>Ігрове Лобі</h1>
+        <div id="auth-section">
+            <p>Будь ласка, увійдіть, щоб створювати ігри або приєднуватися до них.</p>
+            <button id="login-btn">Увійти через Google</button>
+        </div>
+        <div id="games-list-section" style="display: none;">
+            <h2>Доступні ігри</h2>
+            <div id="games-list">
+                <!-- List of games will be populated here -->
+            </div>
+            <button id="create-game-btn">Створити Нову Гру</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="lobby.js"></script>
+</body>
+</html>
