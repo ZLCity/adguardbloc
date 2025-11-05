@@ -1,0 +1,103 @@
+body {
+    font-family: sans-serif;
+    background-color: #f0e6d2;
+    color: #4a3f35;
+    margin: 0;
+    padding: 1em;
+}
+
+#game-container {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 1em;
+    height: 95vh;
+}
+
+header, #player-actions {
+    text-align: center;
+}
+
+#players-hud-container {
+    display: flex;
+    justify-content: center;
+    gap: 1.5em;
+    padding: 0.5em;
+    background: #c8b7a6;
+    border-radius: 8px;
+}
+
+.player-hud {
+    padding: 1em;
+    border: 2px solid #7a6a53;
+    border-radius: 6px;
+    background-color: #e6dac8;
+}
+
+#game-table {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1em;
+    background: #bfa990;
+    padding: 1em;
+    border-radius: 10px;
+}
+
+#deck-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2em;
+}
+
+.deck-pile {
+    text-align: center;
+}
+
+.card-placeholder {
+    width: 100px;
+    height: 150px;
+    border: 2px dashed #7a6a53;
+    border-radius: 10px;
+    background-color: #dcd0ba;
+}
+
+#combat-area, #log-area {
+    background-color: #e6dac8;
+    border-radius: 8px;
+    padding: 1em;
+}
+
+#log-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    height: 150px;
+    overflow-y: auto;
+}
+
+#player-hand-area {
+    background: #c8b7a6;
+    padding: 1em;
+    border-radius: 8px;
+}
+
+.hand-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    min-height: 170px;
+}
+
+.card {
+    width: 100px;
+    height: 150px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 0.5em;
+    background-color: #fff8e1;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 0.8em;
+}

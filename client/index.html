@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munchkin Clone</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>Munchkin Clone</h1>
+        </header>
+
+        <div id="players-hud-container">
+            <!-- Player info will be dynamically generated here -->
+        </div>
+
+        <main id="game-table">
+            <div id="deck-area">
+                <div class="deck-pile" id="door-deck">
+                    <p>Двері</p>
+                    <div class="card-placeholder"></div>
+                </div>
+                <div class="deck-pile" id="treasure-deck">
+                    <p>Скарби</p>
+                    <div class="card-placeholder"></div>
+                </div>
+            </div>
+            <div id="combat-area">
+                <h2>Бій</h2>
+                <!-- Monster and player combat cards will go here -->
+            </div>
+            <div id="log-area">
+                <h3>Ігровий Лог</h3>
+                <ul id="log-list"></ul>
+            </div>
+        </main>
+
+        <footer id="player-hand-area">
+            <h2>Ваша Рука</h2>
+            <div id="player-hand" class="hand-container">
+                <!-- Player's cards will be dynamically generated here -->
+            </div>
+            <div id="player-actions">
+                <button id="end-turn-btn">Завершити Хід</button>
+            </div>
+        </footer>
+    </div>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+
+    <!-- Your App's Logic -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>

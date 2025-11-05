@@ -1,0 +1,56 @@
+{
+  "door": [
+    {
+      "id": "d001",
+      "title": "Курча-на-бігу",
+      "type": "DOOR",
+      "subtype": "MONSTER",
+      "description": "Рівень 1. Не буде переслідувати гравців 3-го рівня або нижче.",
+      "level": 1,
+      "treasures": 1
+    },
+    {
+      "id": "d002",
+      "title": "Плутонієвий Дракон",
+      "type": "DOOR",
+      "subtype": "MONSTER",
+      "description": "Рівень 20. +5 проти гномів. Потрібно кинути кубик, щоб втекти. Якщо програв - смерть.",
+      "level": 20,
+      "treasures": 5
+    },
+    {
+      "id": "d003",
+      "title": "Прокляття! Зміна статі",
+      "type": "DOOR",
+      "subtype": "CURSE",
+      "description": "Твоя стать змінюється. Всі бонуси, пов'язані зі старою статтю, втрачаються."
+    }
+  ],
+  "treasure": [
+    {
+      "id": "t001",
+      "title": "Черевики Могутнього Пенделя",
+      "type": "TREASURE",
+      "subtype": "ITEM",
+      "description": "Бонус +2. Взуття.",
+      "bonus": 2,
+      "slot": "FEET"
+    },
+    {
+      "id": "t002",
+      "title": "Колінжабль",
+      "type": "TREASURE",
+      "subtype": "ITEM",
+      "description": "Бонус +1. Наколінники.",
+      "bonus": 1,
+      "slot": "LEGS"
+    },
+    {
+      "id": "t003",
+      "title": "Зіллля Попукенроллу",
+      "type": "TREASURE",
+      "subtype": "ONE_SHOT",
+      "description": "Використовуй у будь-якому бою. +2 до будь-якої зі сторін. Одноразове."
+    }
+  ]
+}
