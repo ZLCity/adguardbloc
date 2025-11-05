@@ -1,12 +1,16 @@
 import { firebaseConfig } from './firebase-config.js';
-// Note: In a real app, these would be imported from the Firebase SDK NPM package.
-// For this browser-based setup, we assume the SDKs are loaded via script tags in index.html.
-// import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-// import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-// --- Firebase Initialization (using global firebase object from scripts) ---
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+
+// --- Firebase Initialization ---
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const functions = getFunctions(app);
+const auth = getAuth(app);
+
 
 // --- DOM Elements ---
 const playerHudContainer = document.getElementById('players-hud-container');
@@ -15,80 +19,87 @@ const doorDeckElement = document.getElementById('door-deck');
 const logList = document.getElementById('log-list');
 const endTurnBtn = document.getElementById('end-turn-btn');
 
-// --- Game State (now driven by Firestore) ---
-let game; // This will hold the game state from Firestore
-let localPlayerId = 'player1'; // This would be set by Firebase Auth
-const GAME_SESSION_ID = 'game_xyz789'; // A fixed ID for this example
+// --- Game State ---
+let game;
+let localPlayerId = null;
+let gameSessionId = null;
+let unsubscribeGame = null;
 
-// --- Firestore Real-time Listener ---
+// --- Authentication & Game Initialization ---
+onAuthStateChanged(auth, user => {
+    if (user) {
+        localPlayerId = user.uid;
+        const urlParams = new URLSearchParams(window.location.search);
+        gameSessionId = urlParams.get('gameId');
 
-// This is the core of the real-time functionality.
-// It listens for any changes to our game session document in Firestore.
-// Whenever the document is updated, this function runs and updates the UI.
-const gameSessionRef = db.collection('game_sessions').doc(GAME_SESSION_ID);
-const unsubscribe = gameSessionRef.onSnapshot(doc => {
-    if (doc.exists) {
-        game = doc.data(); // Update our local game state with the data from Firestore
-        console.log("Received game state update:", game);
-        addLog("Стан гри оновлено з сервера.");
-        renderFullUI();
+        if (gameSessionId) {
+            addLog(`Authenticated as ${user.displayName}. Joining game ${gameSessionId}...`);
+            subscribeToGameSession();
+        } else {
+            addLog("Error: No game ID found in URL. Please join a game from the lobby.");
+        }
     } else {
-        console.log("No such document!");
-        addLog("Помилка: не вдалося знайти ігрову сесію.");
-        // Here you might show a "Create Game" button.
+        addLog("You are not signed in. Please go to the lobby to sign in.");
+        localPlayerId = null;
     }
-}, err => {
-    console.log(`Encountered error: ${err}`);
-    addLog("Помилка підключення до сервера.");
 });
 
+// --- Firestore Real-time Listener ---
+function subscribeToGameSession() {
+    if (unsubscribeGame) unsubscribeGame(); // Unsubscribe from any previous listener
 
-// --- Player Actions (now send requests to the server) ---
-
-function handleDrawDoor() {
-    // Instead of changing the game state directly, we now "ask" the server to do it.
-    // In a real app, this would call a Cloud Function.
-    console.log(`Client requests action: 'DRAW_DOOR' for player: ${localPlayerId}`);
-    addLog("Запит на взяття карти дверей відправлено на сервер...");
-    // Since we don't have a Cloud Function yet, we can't do anything else here.
-    // The UI will only update when Firestore changes.
+    const gameSessionRef = doc(db, 'game_sessions', gameSessionId);
+    unsubscribeGame = onSnapshot(gameSessionRef, (doc) => {
+        if (doc.exists()) {
+            game = doc.data();
+            addLog("Game state updated from server.");
+            renderFullUI();
+        } else {
+            addLog("Error: Game session not found.");
+        }
+    });
 }
 
-function handleEndTurn() {
-    console.log(`Client requests action: 'END_TURN' for player: ${localPlayerId}`);
-    addLog("Запит на завершення ходу відправлено на сервер...");
-}
 
-// Add event listeners
-doorDeckElement.addEventListener('click', handleDrawDoor);
-endTurnBtn.addEventListener('click', handleEndTurn);
+// --- Player Actions ---
+const processGameAction = httpsCallable(functions, 'processGameAction');
 
-
-// --- Rendering (largely the same, but now uses Firestore data) ---
-
-function renderFullUI() {
-    if (!game) {
-        console.log("Game state not loaded yet.");
+async function handleDrawDoor() {
+    if (!gameSessionId) {
+        addLog("Cannot perform action: no game ID.");
         return;
     }
+    addLog("Sending 'KICK_OPEN_DOOR' request...");
+    try {
+        const result = await processGameAction({ gameId: gameSessionId, action: 'KICK_OPEN_DOOR' });
+        addLog(`Server responded: ${result.data.message}`);
+    } catch (error) {
+        console.error("Error calling Cloud Function:", error);
+        addLog(`Error: ${error.message}`);
+    }
+}
+
+// Event Listeners
+doorDeckElement.addEventListener('click', handleDrawDoor);
+endTurnBtn.addEventListener('click', () => addLog("End turn action not yet implemented."));
+
+
+// --- Rendering ---
+function renderFullUI() {
+    if (!game || !localPlayerId) return;
     renderPlayersHUD();
     renderPlayerHand();
 }
 
 function renderPlayersHUD() {
     playerHudContainer.innerHTML = '';
-    // Assuming game.players is an array of player objects in Firestore
     game.players.forEach(player => {
         const hud = document.createElement('div');
         hud.className = 'player-hud';
-        if(player.id === game.gameState.currentPlayerId) {
+        if(player.id === game.players[game.currentPlayerIndex].id) {
             hud.style.borderColor = 'gold';
         }
-        hud.innerHTML = `
-            <h3>${player.name}</h3>
-            <p>Рівень: ${player.level}</p>
-            <p>Сила: ${player.combatStrength}</p> <!-- Assuming this is calculated server-side -->
-        `;
+        hud.innerHTML = `<h3>${player.name}</h3><p>Level: ${player.level}</p>`;
         playerHudContainer.appendChild(hud);
     });
 }
@@ -96,10 +107,9 @@ function renderPlayersHUD() {
 function renderPlayerHand() {
     const localPlayer = game.players.find(p => p.id === localPlayerId);
     if (!localPlayer || !localPlayer.hand) {
-        playerHandContainer.innerHTML = '<em>Ваша рука порожня.</em>';
+        playerHandContainer.innerHTML = '<em>Your hand is empty.</em>';
         return;
     }
-
     playerHandContainer.innerHTML = '';
     localPlayer.hand.forEach(card => {
         const cardElement = createCardElement(card);
@@ -121,4 +131,4 @@ function addLog(message) {
     logList.prepend(li);
 }
 
-addLog("Клієнт ініціалізовано. Очікування даних з Firebase...");
+addLog("Client initialized. Waiting for authentication...");

@@ -2,28 +2,42 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
-// This is a placeholder for our Game Engine.
-// In a real project, you'd import the classes from the /game-engine directory.
-// For simplicity here, we'll just include a stub.
-const Game = require('../game-engine/Game.js'); // This won't work out-of-the-box, requires bundling or restructuring
+const Game = require('../game-engine/Game.js');
+const Deck = require('../game-engine/Deck.js');
+const Player = require('../game-engine/Player.js');
 
-/**
- * This is the main Cloud Function that will process all player actions.
- * It's triggered via HTTPS request from the client.
- *
- * @param {object} data - The data sent from the client.
- *   - gameId: The ID of the game session.
- *   - action: The action being performed (e.g., 'DRAW_DOOR').
- *   - playerId: The ID of the player performing the action.
- * @param {object} context - Firebase context, contains auth info.
- */
+// Helper function to reconstruct the game state from Firestore data
+function rehydrateGame(gameData) {
+    const game = new Game([], {}); // Create a shell
+
+    // Rehydrate players
+    game.players = gameData.players.map(pData => {
+        const player = new Player(pData.id, pData.name);
+        Object.assign(player, pData); // Copy properties
+        return player;
+    });
+
+    // Rehydrate decks
+    game.doorDeck = new Deck(gameData.doorDeck.cards);
+    game.treasureDeck = new Deck(gameData.treasureDeck.cards);
+    game.discard.door = new Deck(gameData.discard.door.cards);
+    game.discard.treasure = new Deck(gameData.discard.treasure.cards);
+
+    // Copy other properties
+    game.currentPlayerIndex = gameData.currentPlayerIndex;
+    game.gameState = gameData.gameState;
+    game.combat = gameData.combat;
+
+    return game;
+}
+
 exports.processGameAction = functions.https.onCall(async (data, context) => {
-  // 1. Authentication: Ensure the user is logged in.
   if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'You must be logged in to perform an action.');
+    throw new functions.https.HttpsError('unauthenticated', 'You must be logged in.');
   }
 
-  const { gameId, action, playerId } = data;
+  const { gameId, action } = data;
+  const playerId = context.auth.uid;
   const db = admin.firestore();
   const gameRef = db.collection('game_sessions').doc(gameId);
 
@@ -33,34 +47,46 @@ exports.processGameAction = functions.https.onCall(async (data, context) => {
       throw new functions.https.HttpsError('not-found', 'Game session not found.');
     }
 
-    let gameState = doc.data();
+    const gameData = doc.data();
+    const game = rehydrateGame(gameData);
 
-    // 2. Authorization & Validation: Ensure the action is valid.
-    // Is it this player's turn? Is the action valid for the current game phase?
-    // (Logic to be added here)
-
-    // 3. Action Processing: Use the Game Engine to update the state.
-    // This is a conceptual example. A real implementation would need to
-    // instantiate the Game class with the state from Firestore.
-    console.log(`Processing action '${action}' for game '${gameId}' by player '${playerId}'`);
-    // let game = new Game(gameState.players, gameState.cards); // Rehydrate game state
-    // game.processAction(playerId, action, data);
-    // let newState = game.getState(); // Get the new state from the engine
-
-    // --- Placeholder logic for now ---
-    if (action === 'DRAW_DOOR') {
-        gameState.log.push(`${playerId} drew a door card.`);
+    // --- Action Processing using the Game Engine ---
+    const currentPlayer = game.getCurrentPlayer();
+    if (currentPlayer.id !== playerId) {
+        throw new functions.https.HttpsError('failed-precondition', 'It is not your turn.');
     }
-    // --- End Placeholder ---
 
+    switch (action) {
+        case 'KICK_OPEN_DOOR':
+            if (game.gameState.phase !== 'DRAW_DOOR') {
+                 throw new functions.https.HttpsError('failed-precondition', 'You cannot kick open the door right now.');
+            }
+            const card = currentPlayer.drawCard(game.doorDeck);
+            if (!card) {
+                // Handle empty deck
+                game.gameState.phase = 'LOOT';
+                break;
+            }
 
-    // 4. Save new state to Firestore.
-    await gameRef.set(gameState);
+            if (card.subtype === 'MONSTER') {
+                game.startCombat(card);
+            } else {
+                // Handle curse, item, etc. (for now, just add to hand)
+                game.gameState.phase = 'LOOT';
+            }
+            break;
+        // ... other actions like 'PLAY_CARD', 'RESOLVE_COMBAT' would go here
+    }
 
-    return { status: 'success', message: 'Action processed successfully.' };
+    // Convert the game object back to a plain object for Firestore
+    const newGameData = JSON.parse(JSON.stringify(game));
+
+    await gameRef.set(newGameData);
+
+    return { status: 'success', message: 'Action processed.' };
 
   } catch (error) {
     console.error("Error processing game action:", error);
-    throw new functions.https.HttpsError('internal', 'An error occurred while processing the action.');
+    throw new functions.https.HttpsError('internal', error.message);
   }
 });
